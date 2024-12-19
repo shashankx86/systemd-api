@@ -11,11 +11,18 @@ public class AppConfig {
     @Value("${spring.application.version:${version:unknown}}")
     private String version;
 
+    @Value("${app.security.sudo.enabled:false}")
+    private boolean sudoEnabled;
+
     public String getEnvironment() {
         return environment;
     }
 
     public String getVersion() {
         return version;
+    }
+
+    public boolean isSudoEnabled() {
+        return sudoEnabled;
     }
 }
