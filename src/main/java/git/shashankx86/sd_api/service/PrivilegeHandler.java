@@ -14,23 +14,18 @@ import java.nio.file.attribute.PosixFilePermissions;
 public class PrivilegeHandler {
     private static final Logger logger = LoggerFactory.getLogger(PrivilegeHandler.class);
     
-    @Value("${app.security.sudo.enabled:false}")
-    private boolean sudoEnabled;
-    
     private boolean sudoAvailable = false;
 
     @PostConstruct
     public void init() {
-        if (sudoEnabled) {
-            checkPrivileges();
-        } else {
-            logger.info("Sudo features are disabled by configuration");
-        }
+        checkPrivileges();
     }
     
     private void checkPrivileges() {
         if (!isRoot()) {
-            logger.warn("Application is not running with elevated privileges. Some features will be limited.");
+            logger.warn("Application is not running with elevated privileges. Sudo features will be disabled.");
+            sudoAvailable = false;
+            return;
         }
         checkSudoAccess();
     }
@@ -45,9 +40,7 @@ public class PrivilegeHandler {
             Process p = pb.start();
             int exitCode = p.waitFor();
             sudoAvailable = (exitCode == 0);
-            if (!sudoAvailable) {
-                logger.warn("Sudo access is not available. Some features will be limited.");
-            } else {
+            if (sudoAvailable) {
                 logger.info("Sudo access is available");
             }
         } catch (Exception e) {
@@ -57,6 +50,6 @@ public class PrivilegeHandler {
     }
     
     public boolean isSudoAvailable() {
-        return sudoEnabled && sudoAvailable;
+        return sudoAvailable;
     }
 }

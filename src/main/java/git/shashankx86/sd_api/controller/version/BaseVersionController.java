@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import git.shashankx86.sd_api.service.CommandExecutorService;
 import git.shashankx86.sd_api.service.PrivilegeHandler;
 import git.shashankx86.sd_api.common.response.ErrorResponse;
+import git.shashankx86.sd_api.common.response.ApiResponse;
 
 public abstract class BaseVersionController {
     @Autowired
@@ -18,18 +19,18 @@ public abstract class BaseVersionController {
     protected abstract boolean isSudo();
     
     @GetMapping("/version")
-    public ResponseEntity<?> getVersion() {
+    public ResponseEntity<ApiResponse<?>> getVersion() {
         try {
             String output = commandExecutor.executeCommand("systemd --version", isSudo());
-            return ResponseEntity.ok(new VersionResponse(output));
+            return ResponseEntity.ok(ApiResponse.success(new VersionResponse(output)));
         } catch (SecurityException e) {
             return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse("Sudo access is not available"));
+                .body(ApiResponse.error(e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(e.getMessage()));
+                .body(ApiResponse.error(e.getMessage()));
         }
     }
 }
